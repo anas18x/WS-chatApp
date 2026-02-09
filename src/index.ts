@@ -1,5 +1,8 @@
 import { ENV } from "./config/env.config.js";
 import { WebSocketServer, WebSocket } from "ws";
+import { roomController } from "./controller/index.js";
+import { roomService } from "./services/index.js";
+
 const wss = new WebSocketServer({ port: ENV.PORT as number }, () => {
   console.log(`WebSocket server running on port ${ENV.PORT}`);
 });
@@ -14,36 +17,32 @@ wss.on("connection", (socket) => {
     const parsedMessage = JSON.parse(message.toString());
 
 
-    if (parsedMessage.type === "join") {
-      if (!clients.has(parsedMessage.roomId)) {
-        clients.set(parsedMessage.roomId, new Set());
+    if (parsedMessage.type === "create-new-room") {
+      if (!clients.has(parsedMessage.payload.roomId)) {
+        clients.set(parsedMessage.payload.roomId, new Set());
       }
 
       // add socket to the room
-      clients.get(parsedMessage.roomId)?.add(socket);
+      clients.get(parsedMessage.payload.roomId)?.add(socket);
       console.log(
-        `${parsedMessage.name} joined the room ${parsedMessage.roomId}`,
+        `${parsedMessage.payload.name} joined the room ${parsedMessage.payload.roomId}`,
       );
     }
 
 
     if (parsedMessage.type === "chat") {
-      const currentUserRoom = clients.get(parsedMessage.roomId);
-      currentUserRoom?.forEach((clientSocket) => {
-        clientSocket.send(parsedMessage.payload.message);
+      const currentUserRoom = clients.get(parsedMessage.payload.roomId);
+       console.log("Chat received for room:", currentUserRoom);
+       currentUserRoom?.forEach((clientSocket) => {
+        if (clientSocket.readyState === WebSocket.OPEN) {
+          clientSocket.send(JSON.stringify(parsedMessage.payload));
+        }
       });
     }
 
   });
 
 
-  socket.on("close", () => {
-    clients.forEach((sockets, roomId) => {
-      if (sockets.has(socket)) {
-        sockets.delete(socket);
-        console.log(`client left the room ${roomId}`);
-      }
-    });
-  });
-  
+  socket.on("close", () => roomService.leaveRoom(socket, clients));
+
 });

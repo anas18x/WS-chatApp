@@ -1,0 +1,1 @@
+export * as roomController from "./room.controller.js"
