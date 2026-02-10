@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/config/env.config.ts"],"version":"5.9.3"}
+{"root":["./src/index.ts","./src/config/env.config.ts","./src/controller/index.ts","./src/controller/room.controller.ts","./src/services/index.ts","./src/services/room.service.ts","./src/types/message.schema.ts"],"version":"5.9.3"}

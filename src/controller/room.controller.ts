@@ -5,7 +5,7 @@ import { messageSchema } from "../types/message.schema.js";
 export const handleMessage = (
   message: WebSocket.RawData,
   socket: WebSocket,
-  clients: Map<WebSocket, { roomId: string; name: string }> ) => {
+  socketsInfo: Map<WebSocket, { roomId: string; name: string }> ) => {
 
   let parsedMessage ;
   try{
@@ -24,17 +24,17 @@ export const handleMessage = (
   }
 
   if (validation.data.type === "create-new-room") {
-    roomService.createNewRoom();
+    roomService.createNewRoom(socket, validation.data.payload, socketsInfo);
     return;
   }
 
   if (validation.data.type === "join-room") {
-    roomService.joinRoom();
+    roomService.joinRoom(socket, validation.data.payload, socketsInfo);
     return;
   }
 
   if (validation.data.type === "chat") {
-    roomService.sendMessage();
+    roomService.sendMessage(socket, validation.data.payload, socketsInfo);
     return;
   }
 
